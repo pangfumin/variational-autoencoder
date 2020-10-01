@@ -6,6 +6,8 @@ import os
 from scipy.misc import imsave as ims
 from utils import *
 from ops import *
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior() 
 
 class LatentAttention():
     def __init__(self):
@@ -13,7 +15,7 @@ class LatentAttention():
         self.n_samples = self.mnist.train.num_examples
 
         self.n_hidden = 500
-        self.n_z = 20
+        self.n_z = 32
         self.batchsize = 100
 
         self.images = tf.placeholder(tf.float32, [None, 784])
@@ -34,7 +36,7 @@ class LatentAttention():
 
     # encoder
     def recognition(self, input_images):
-        with tf.variable_scope("recognition"):
+        with tf.compat.v1.variable_scope("recognition"):
             h1 = lrelu(conv2d(input_images, 1, 16, "d_h1")) # 28x28x1 -> 14x14x16
             h2 = lrelu(conv2d(h1, 16, 32, "d_h2")) # 14x14x16 -> 7x7x32
             h2_flat = tf.reshape(h2,[self.batchsize, 7*7*32])
@@ -46,7 +48,7 @@ class LatentAttention():
 
     # decoder
     def generation(self, z):
-        with tf.variable_scope("generation"):
+        with tf.compat.v1.variable_scope("generation"):
             z_develop = dense(z, self.n_z, 7*7*32, scope='z_matrix')
             z_matrix = tf.nn.relu(tf.reshape(z_develop, [self.batchsize, 7, 7, 32]))
             h1 = tf.nn.relu(conv_transpose(z_matrix, [self.batchsize, 14, 14, 16], "g_h1"))
